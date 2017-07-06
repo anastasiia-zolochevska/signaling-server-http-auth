@@ -1,0 +1,14 @@
+{
+  "name": "signaling-server",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "description": "signaling-server",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "passport": "^0.3.2",
+    "passport-azure-ad": "^3.0.7"
+  }
+}
