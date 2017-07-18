@@ -88,6 +88,7 @@ app.all('*', function (req, res, next) {
         peers[req.query.peer_id].lastSeenActive = (new Date()).getTime();
     }
     if (process.env.AUTH_DISABLED && process.env.AUTH_DISABLED!="False" &&  process.env.AUTH_DISABLED!="false") {
+        log("Auth disabled"  +process.env.AUTH_DISABLED +process.env.AUTH_DISABLED!="False" + process.env.AUTH_DISABLED!="false" )
         next();
     }
     else {
