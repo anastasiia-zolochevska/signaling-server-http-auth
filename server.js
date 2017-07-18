@@ -13,7 +13,7 @@ var clientToId = {};
 var peers = {};
 var connectionsToClean = new Set();
 
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 3001;
 
 
 var intervalToCleanConnections = process.env.INTERVAL || 10000;
@@ -39,8 +39,6 @@ httpServer.keepAliveTimeout = 120000;
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.text())
-
-
 
 var b2cStrategy = new BearerStrategy({
     identityMetadata: "https://login.microsoftonline.com/" + (process.env.AAD_TENANT_ID || "3dtoolkit.onmicrosoft.com") + "/v2.0/.well-known/openid-configuration",
@@ -89,7 +87,7 @@ app.all('*', function (req, res, next) {
     if (req.query.peer_id && peers[req.query.peer_id]) {
         peers[req.query.peer_id].lastSeenActive = (new Date()).getTime();
     }
-    if (process.env.AUTH_DISABLED && process.env.AUTH_DISABLED!="True" &&  process.env.AUTH_DISABLED!="true") {
+    if (process.env.AUTH_DISABLED && process.env.AUTH_DISABLED!="False" &&  process.env.AUTH_DISABLED!="false") {
         next();
     }
     else {
