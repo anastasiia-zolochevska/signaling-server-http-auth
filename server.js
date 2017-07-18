@@ -89,7 +89,7 @@ app.all('*', function (req, res, next) {
     if (req.query.peer_id && peers[req.query.peer_id]) {
         peers[req.query.peer_id].lastSeenActive = (new Date()).getTime();
     }
-    if (process.env.AUTH_DISABLED) {
+    if (process.env.AUTH_DISABLED && process.env.AUTH_DISABLED!="True" &&  process.env.AUTH_DISABLED!="true") {
         next();
     }
     else {
