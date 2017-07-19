@@ -13,7 +13,7 @@ var clientToId = {};
 var peers = {};
 var connectionsToClean = new Set();
 
-var port = process.env.PORT || 3001;
+var port = process.env.PORT || 3001
 
 
 var intervalToCleanConnections = process.env.INTERVAL || 10000;
@@ -46,7 +46,7 @@ var b2cStrategy = new BearerStrategy({
     policyName: process.env.AAD_B2C_POLICY_NAME || "b2c_1_signup",
     isB2C: true,
     validateIssuer: true,
-    loggingLevel: 'info',
+    loggingLevel: 'warn',
     passReqToCallback: false,
 },
     function (token, done) {
@@ -62,11 +62,11 @@ passport.use(new BearerStrategy({
     clientID: process.env.AAD_RENDERING_SERVER_APPLICATION_ID || "5b4df04b-e3bb-4710-92ca-e875d38171b3",
     isB2C: false,
     validateIssuer: true,
-    loggingLevel: 'info',
+    loggingLevel: 'warn',
     passReqToCallback: false
 },
     function (token, done) {
-        return done(null, {}, token);
+         return done(null, {}, token);
     }
 ));
 
@@ -93,7 +93,7 @@ app.all('*', function (req, res, next) {
     }
     else {
         passport.authenticate(['oauth-bearer', 'oauth-bearer-b2c'], function (err, user, info) {
-            if (!err && info) {
+            if (user && !err && info) {
                 next();
             }
             else {
