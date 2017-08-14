@@ -1,6 +1,8 @@
 
 var express = require('express');
 var bodyParser = require('body-parser');
+var helmet = require('helmet');
+var cors = require('cors');
 var http = require('http');
 var passport = require("passport");
 var BearerStrategy = require('passport-azure-ad').BearerStrategy;
@@ -13,13 +15,11 @@ var clientToId = {};
 var peers = {};
 var connectionsToClean = new Set();
 
-var port = process.env.PORT || 3001
-
-
+var port = process.env.PORT || 3001;
+var allowedOrigins = (process.env.CORS_ORIGINS || '*').split(',')
 var intervalToCleanConnections = process.env.INTERVAL || 10000;
 
-
-if (process.env.ENABLE_LOGGING_TO_FILE) {
+if (process.env.ENABLE_LOGGING_TO_FILE){
     const fs = require('fs')
     var logLocation = process.env.LOGGING_FILE_LOCATION || 'D:\home\site\wwwroot\api.access.log'
     var access = fs.createWriteStream(logLocation + new Date().getMilliseconds());
@@ -32,11 +32,14 @@ if (process.env.ENABLE_LOGGING_TO_FILE) {
 }
 
 var app = express();
-
 var httpServer = http.createServer(app);
 
 httpServer.keepAliveTimeout = 120000;
 
+app.use(helmet())
+app.use(cors({
+    origin: (origin, cb) => cb(null, allowedOrigins.indexOf('*') !== -1 || allowedOrigins.indexOf(origin) !== -1)
+}))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.text())
 
@@ -82,6 +85,7 @@ app.use(function (req, res, next) {
 
 });
 
+
 app.all('*', function (req, res, next) {
     log(req.url);
     if (req.query.peer_id && peers[req.query.peer_id]) {
@@ -123,6 +127,7 @@ setInterval(cleanPeerList, intervalToCleanConnections);
 
 app.get('/sign_in', function (req, res) {
     var client = {};
+    log(req.url);
     var newPeer = {}
     newPeer.id = clientCounter++;
     newPeer.peerType = 'client';
@@ -143,8 +148,8 @@ app.get('/sign_in', function (req, res) {
     notifyOtherPeers(newPeer);
 })
 
-
 app.post('/message', function (req, res) {
+    log(req.url);
     var fromId = req.query.peer_id;
     var toId = req.query.to;
     var payload = req.body;
@@ -169,10 +174,13 @@ app.get('/heartbeat', function (req, res) {
 })
 
 app.get('/sign_out', function (req, res) {
+    log(req.url);
     var peerId = req.query.peer_id;
 
-    if (peers[peerId] && peers[peerId].roomPeer) {
-        peers[peerId].roomPeer.roomPeer = null;
+    var peer = peers[peerId];
+
+    if (peer.roomPeer) {
+        peer.roomPeer.roomPeer = null;
     }
 
     delete peers[peerId];
@@ -181,8 +189,8 @@ app.get('/sign_out', function (req, res) {
     res.send("Ok");
 })
 
-
 app.get('/wait', function (req, res) {
+    log(req.url);
     var peerId = req.query.peer_id;
 
     if (connectionsToClean.has(peerId)) {
@@ -216,7 +224,6 @@ app.get('/wait', function (req, res) {
     });
 
 })
-
 
 function formatListOfPeers(peer) {
     var result = peer.name + "," + peer.id + ",1\n";
@@ -273,4 +280,3 @@ function isPeerCandidate(peer, otherPeer) {
 log("Signaling server running at port " + port);
 
 httpServer.listen(port)
-
